@@ -1,6 +1,7 @@
 # Import python packages
 import streamlit as st
 import requests
+import pandas as pd
 from snowflake.snowpark.functions import col
 
 # Write directly to the app
@@ -14,6 +15,8 @@ st.write(
 cnx = st.connection("snowflake")
 session = cnx.session()
 fruit_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'),col('SEARCH_ON'))
+# Convert to pandas dataframe
+pd_fruit = fruit_dataframe.to_pandas()
 
 name_on_order = st.text_input('Label yourself, heretic.')
 st.write('The condemned is called:', name_on_order)
@@ -28,8 +31,9 @@ if ingredient_list:
     ingredients_string = ''     # initialize empty string
     for fruit_chosen in ingredient_list:
         ingredients_string += fruit_chosen + ' '      # append item with space between
+        search_on = pd_fruit.loc[pd_fruit['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]  # find search value for API call
         st.subheader(fruit_chosen + ' Nutrition Information')
-        smoothiefroot_response = requests.get("https://fruityvice.com/api/fruit/" + fruit_chosen)
+        smoothiefroot_response = requests.get("https://fruityvice.com/api/fruit/" + search_on)  # use search_on for the API call
         sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
 
     insert_statement = """ insert into smoothies.public.orders(ingredients, name_on_order)
