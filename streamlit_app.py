@@ -13,7 +13,7 @@ st.write(
 
 cnx = st.connection("snowflake")
 session = cnx.session()
-fruit_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
+fruit_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'),col('SEARCH_ON'))
 
 name_on_order = st.text_input('Label yourself, heretic.')
 st.write('The condemned is called:', name_on_order)
